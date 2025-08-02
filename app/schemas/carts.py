@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from typing import List
 from datetime import datetime
 from .products import ProductBase, CategoryBase
@@ -9,7 +9,7 @@ class BaseConfig:
 
 
 class ProductBaseCart(ProductBase):
-    category: CategoryBase = Field(exclude=True)
+    category: CategoryBase
 
     class Config(BaseConfig):
         pass

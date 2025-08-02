@@ -4,6 +4,7 @@ from typing import List
 
 
 class CommentBase(BaseModel):
+    id: int
     product_id: int
     content: str
     rating: float

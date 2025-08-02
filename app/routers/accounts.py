@@ -34,15 +34,16 @@ def edit_my_info(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    existing_username = db.query(User).\
-        filter(User.username == updated_user.username).\
-        first()
-
-    if existing_username:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=f"User with username: {updated_user.username} already exists!"
-        )
+    if updated_user.username != current_user.username:
+        existing_username = db.query(User).\
+            filter(User.username == updated_user.username).\
+            first()
+        
+        if existing_username:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=f"User with username: {updated_user.username} already exists!"
+            )
 
     current_user.username = updated_user.username
     current_user.fullname = updated_user.fullname
