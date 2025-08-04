@@ -1,45 +1,45 @@
-import axios from "axios";
+import api from "../axios";
 
 // src/types/category.ts
-interface CategoryBase {
+export interface CategoryBase {
   id: number;
   name: string;
 }
 
-interface CategoryCreate {
+export interface CategoryCreate {
   name: string;
 }
 
-interface CategoryUpdate {
+export interface CategoryUpdate {
   name: string;
 }
 
-interface CategoryOut extends CategoryBase {}
+export interface CategoryOut extends CategoryBase {}
 
-interface CategoriesOut {
+export interface CategoriesOut {
   data: CategoryBase[];
 }
 
-const API_URL = "http://localhost:8000/categories";
+const API_URL = "/categories"; // Use relative path to leverage api.baseURL
 
 export async function fetchCategories(
   search = "",
   page = 1,
   limit = 10
 ): Promise<CategoriesOut> {
-  const res = await axios.get<CategoriesOut>(API_URL, {
+  const res = await api.get<CategoriesOut>(API_URL, {
     params: { search, page, limit },
   });
   return res.data;
 }
 
 export async function fetchCategory(id: number): Promise<CategoryOut> {
-  const res = await axios.get<CategoryOut>(`${API_URL}/${id}`);
+  const res = await api.get<CategoryOut>(`${API_URL}/${id}`);
   return res.data;
 }
 
 export async function createCategory(data: CategoryCreate): Promise<CategoryOut> {
-  const res = await axios.post<CategoryOut>(API_URL, data);
+  const res = await api.post<CategoryOut>(API_URL, data);
   return res.data;
 }
 
@@ -47,10 +47,10 @@ export async function updateCategory(
   id: number,
   data: CategoryUpdate
 ): Promise<CategoryOut> {
-  const res = await axios.put<CategoryOut>(`${API_URL}/${id}`, data);
+  const res = await api.put<CategoryOut>(`${API_URL}/${id}`, data);
   return res.data;
 }
 
 export async function deleteCategory(id: number): Promise<void> {
-  await axios.delete(`${API_URL}/${id}`);
+  await api.delete(`${API_URL}/${id}`);
 }

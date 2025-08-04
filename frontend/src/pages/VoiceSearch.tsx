@@ -1,8 +1,6 @@
-// src/pages/VoiceSearch.tsx
-import React, { useState } from "react";
-import axios from "axios";
+import React, { useState, useRef } from "react";
+import api from "../axios"; // your axios instance
 
-// src/types/product.ts
 interface CategoryBase {
   id: number;
   name: string;
@@ -13,46 +11,81 @@ interface ProductBase {
   title: string;
   description?: string;
   price: number;
-  discount_percentage: number; // 0-100 validation done backend-side
+  discount_percentage: number;
   rating: number;
   stock: number;
   brand: string;
   thumbnail: string;
   images: string[];
   is_published: boolean;
-  created_at: string;  // ISO datetime string
+  created_at: string;
   category: CategoryBase;
 }
 
-const VoiceSearch: React.FC = () => {
-  const [file, setFile] = useState<File | null>(null);
+const VoiceLiveSearch: React.FC = () => {
+  const [isRecording, setIsRecording] = useState(false);
   const [products, setProducts] = useState<ProductBase[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0];
-    if (selectedFile) {
-      setFile(selectedFile);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+
+  const startRecording = async () => {
+    setError(null);
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      setError("Your browser does not support audio recording.");
+      return;
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.addEventListener("dataavailable", (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      });
+
+      mediaRecorder.addEventListener("stop", async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+        await sendAudioToBackend(audioBlob);
+        stream.getTracks().forEach(track => track.stop()); // stop mic
+      });
+
+      mediaRecorder.start();
+      setIsRecording(true);
+    } catch (err) {
+      setError("Could not start recording. Please allow microphone access.");
     }
   };
 
-  const handleSearch = async () => {
-    if (!file) return;
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+    }
+  };
+
+  const sendAudioToBackend = async (audioBlob: Blob) => {
     setLoading(true);
-
-    const formData = new FormData();
-    formData.append("file", file);
-
+    setError(null);
     try {
-      const res = await axios.post<{ data: ProductBase[] }>("/voice_search", formData, {
+      const formData = new FormData();
+      formData.append("file", audioBlob, "voice.webm");
+
+      const res = await api.post<{ data: ProductBase[] }>("/products/voice_search", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
       setProducts(res.data.data);
-    } catch (error) {
-      console.error("Voice search failed", error);
-      alert("Voice search failed. Please try again.");
+    } catch (e) {
+      console.error(e);
+      setError("Voice search failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -60,23 +93,30 @@ const VoiceSearch: React.FC = () => {
 
   return (
     <div className="p-6 max-w-5xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Voice Search Products</h1>
+      <h1 className="text-2xl font-bold mb-4">Live Voice Search Products</h1>
 
-      <input
-        type="file"
-        accept="audio/*"
-        onChange={handleFileChange}
-        className="block w-full border border-gray-300 rounded-md p-2 mb-4"
-      />
+      {error && <p className="text-red-600 mb-4">{error}</p>}
 
-      <button
-        onClick={handleSearch}
-        disabled={!file || loading}
-        className={`w-full py-2 rounded-md text-white font-semibold
-          ${loading ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"}`}
-      >
-        {loading ? "Searching..." : "Search by Voice"}
-      </button>
+      <div className="mb-4">
+        {!isRecording ? (
+          <button
+            onClick={startRecording}
+            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+            disabled={loading}
+          >
+            Start Recording
+          </button>
+        ) : (
+          <button
+            onClick={stopRecording}
+            className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+          >
+            Stop Recording
+          </button>
+        )}
+      </div>
+
+      {loading && <p>Processing voice search...</p>}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mt-8">
         {products.length === 0 && !loading && (
@@ -95,7 +135,9 @@ const VoiceSearch: React.FC = () => {
             />
             <div className="p-4">
               <h2 className="font-semibold text-lg">{product.title}</h2>
-              <p className="text-sm text-gray-700 mt-1 line-clamp-3">{product.description || "No description"}</p>
+              <p className="text-sm text-gray-700 mt-1 line-clamp-3">
+                {product.description || "No description"}
+              </p>
               <p className="text-xs text-gray-500 mt-2">Category: {product.category.name}</p>
               <p className="font-bold mt-2">${product.price.toFixed(2)}</p>
             </div>
@@ -106,4 +148,4 @@ const VoiceSearch: React.FC = () => {
   );
 };
 
-export default VoiceSearch;
+export default VoiceLiveSearch;

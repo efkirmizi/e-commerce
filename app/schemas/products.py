@@ -83,3 +83,8 @@ class ProductsAIAnalysisOut(BaseModel):
 
     class Config(BaseConfig):
         pass
+
+
+class TextSearchRequest(BaseModel):
+    search: str
+    limit: int = 10

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
-import axios from 'axios';
+import api from '../axios';
 import { useNavigate } from 'react-router-dom';
 
 interface FormData {
@@ -28,8 +28,8 @@ export default function Login() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     try {
-      const res = await axios.post<LoginResponse>(
-        'http://localhost:8000/login/',
+      const res = await api.post<LoginResponse>(
+        '/login/',
         new URLSearchParams({
           username: formData.username,
           password: formData.password
@@ -41,7 +41,7 @@ export default function Login() {
         }
       );
       localStorage.setItem('access_token', res.data.access_token);
-      navigate('/dashboard');
+      navigate('/me');
     } catch (err) {
       console.error(err);
       setError('Invalid credentials');

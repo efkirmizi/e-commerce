@@ -1,8 +1,6 @@
-// src/api/commentApi.ts
+import api from '../axios';
 
-import axios from 'axios';
-
-interface CommentBase {
+export interface CommentBase {
   id: number;
   product_id: number;
   content: string;
@@ -12,28 +10,28 @@ interface CommentBase {
   sentiment_label: string;
 }
 
-interface CommentOut extends CommentBase {}
+export interface CommentOut extends CommentBase {}
 
-interface CommentsOut {
+export interface CommentsOut {
   data: CommentBase[];
 }
 
-interface CommentCreate {
+export interface CommentCreate {
   content: string;
   rating: number;
 }
 
-interface CommentUpdate extends CommentCreate {}
+export interface CommentUpdate extends CommentCreate {}
 
-const API_BASE = 'http://localhost:8000'; // adjust if needed
+const API_BASE = "/products"; // relative path for API base
 
 export async function fetchCommentsByProduct(
   productId: number,
   page = 1,
   limit = 10
 ): Promise<CommentsOut> {
-  const res = await axios.get<CommentsOut>(
-    `${API_BASE}/products/${productId}/comments`,
+  const res = await api.get<CommentsOut>(
+    `${API_BASE}/${productId}/comments`,
     {
       params: { page, limit },
     }
@@ -45,8 +43,8 @@ export async function fetchComment(
   productId: number,
   commentId: number
 ): Promise<CommentOut> {
-  const res = await axios.get<CommentOut>(
-    `${API_BASE}/products/${productId}/comments/${commentId}`
+  const res = await api.get<CommentOut>(
+    `${API_BASE}/${productId}/comments/${commentId}`
   );
   return res.data;
 }
@@ -55,8 +53,8 @@ export async function createComment(
   productId: number,
   commentData: CommentCreate
 ): Promise<CommentOut> {
-  const res = await axios.post<CommentOut>(
-    `${API_BASE}/products/${productId}/comments`,
+  const res = await api.post<CommentOut>(
+    `${API_BASE}/${productId}/comments`,
     commentData
   );
   return res.data;
@@ -67,8 +65,8 @@ export async function updateComment(
   commentId: number,
   commentData: CommentUpdate
 ): Promise<CommentOut> {
-  const res = await axios.put<CommentOut>(
-    `${API_BASE}/products/${productId}/comments/${commentId}`,
+  const res = await api.put<CommentOut>(
+    `${API_BASE}/${productId}/comments/${commentId}`,
     commentData
   );
   return res.data;
@@ -78,5 +76,5 @@ export async function deleteComment(
   productId: number,
   commentId: number
 ): Promise<void> {
-  await axios.delete(`${API_BASE}/products/${productId}/comments/${commentId}`);
+  await api.delete(`${API_BASE}/${productId}/comments/${commentId}`);
 }

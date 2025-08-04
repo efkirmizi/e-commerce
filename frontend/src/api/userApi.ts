@@ -1,4 +1,4 @@
-import axios from 'axios';
+import api from '../axios';  // Your shared axios instance
 
 // src/types/user.ts
 interface CartItemBase {
@@ -40,10 +40,6 @@ interface UsersOut {
   data: UserBase[];
 }
 
-const api = axios.create({
-  baseURL: 'http://localhost:8000/users', // adjust your backend URL
-});
-
 // Get all users with optional search and role filter (admin only)
 export async function fetchUsers(
   search = '',
@@ -51,7 +47,7 @@ export async function fetchUsers(
   page = 1,
   limit = 10
 ): Promise<UsersOut> {
-  const res = await api.get<UsersOut>('/', {
+  const res = await api.get<UsersOut>('/users', {
     params: { search, role, page, limit },
   });
   return res.data;
@@ -59,23 +55,23 @@ export async function fetchUsers(
 
 // Get user by ID
 export async function fetchUser(userId: number): Promise<UserOut> {
-  const res = await api.get<UserOut>(`/${userId}`);
+  const res = await api.get<UserOut>(`/users/${userId}`);
   return res.data;
 }
 
 // Create new user
 export async function createUser(data: UserCreate): Promise<UserOut> {
-  const res = await api.post<UserOut>('/', data);
+  const res = await api.post<UserOut>('/users', data);
   return res.data;
 }
 
 // Update user (user can only update own data)
 export async function updateUser(userId: number, data: UserUpdate): Promise<UserOut> {
-  const res = await api.put<UserOut>(`/${userId}`, data);
+  const res = await api.put<UserOut>(`/users/${userId}`, data);
   return res.data;
 }
 
 // Delete user (user can only delete own account)
 export async function deleteUser(userId: number): Promise<void> {
-  await api.delete(`/${userId}`);
+  await api.delete(`/users/${userId}`);
 }

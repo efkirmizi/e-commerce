@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../axios"; // use the axios instance you created
 
 // src/types/cart.ts
 interface CartItemBase {
@@ -30,8 +30,6 @@ interface CartCreate {
   cart_items: CartItemCreate[];
 }
 
-const API_URL = "http://localhost:8000/carts";
-
 const CartsList = () => {
   const [carts, setCarts] = useState<CartBase[]>([]);
   const [loading, setLoading] = useState(true);
@@ -39,10 +37,11 @@ const CartsList = () => {
 
   const fetchCarts = async () => {
     setLoading(true);
+    setError("");
     try {
-      const res = await axios.get<CartsOutList>(`${API_URL}`);
+      const res = await api.get<CartsOutList>("/carts");
       setCarts(res.data.data);
-    } catch (err) {
+    } catch (err: any) {
       setError("Failed to load carts");
     } finally {
       setLoading(false);
@@ -51,9 +50,9 @@ const CartsList = () => {
 
   const handleDelete = async (id: number) => {
     try {
-      await axios.delete(`${API_URL}/${id}`);
+      await api.delete(`/carts/${id}`);
       setCarts((prev) => prev.filter((cart) => cart.id !== id));
-    } catch (err) {
+    } catch (err: any) {
       alert("Error deleting cart");
     }
   };
@@ -65,9 +64,9 @@ const CartsList = () => {
     };
 
     try {
-      await axios.post(API_URL, newCart);
+      await api.post("/carts", newCart);
       fetchCarts();
-    } catch (err) {
+    } catch (err: any) {
       alert("Error creating cart");
     }
   };
@@ -86,6 +85,7 @@ const CartsList = () => {
       <button
         className="bg-green-500 text-white px-4 py-2 rounded mb-4"
         onClick={handleAddCart}
+        disabled={loading}
       >
         + Add Cart
       </button>
@@ -114,6 +114,7 @@ const CartsList = () => {
             <button
               className="bg-red-500 text-white px-3 py-1 rounded"
               onClick={() => handleDelete(cart.id)}
+              disabled={loading}
             >
               Delete
             </button>

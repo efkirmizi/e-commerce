@@ -6,7 +6,10 @@ const ProductAIAnalysisWrapper = () => {
 
   if (!productId) return <p>Invalid product ID</p>;
 
-  return <ProductAIAnalysis productId={parseInt(productId, 10)} />;
+  const id = parseInt(productId, 10);
+  if (isNaN(id)) return <p>Invalid product ID</p>;
+
+  return <ProductAIAnalysis productId={id} />;
 };
 
 export default ProductAIAnalysisWrapper;

@@ -1,5 +1,5 @@
 from fastapi import APIRouter, status, Query, Depends, HTTPException, UploadFile, File
-from ..schemas.products import ProductsOut, ProductOut, ProductCreate, ProductUpdate, ProductsAIAnalysisOut
+from ..schemas.products import ProductsOut, ProductOut, ProductCreate, ProductUpdate, ProductsAIAnalysisOut, TextSearchRequest
 from ..database import get_db
 from ..oauth2 import get_current_user, get_admin_user
 from ..models import User, Product, Category, Comment
@@ -31,7 +31,7 @@ def get_all_products(
 ):
     products = db.query(Product).\
         order_by(asc(Product.id)).\
-        filter(Product.title.ilike(f"%{search}")).\
+        filter(Product.title.ilike(f"%{search}%")).\
         limit(limit).\
         offset((page - 1) * limit).\
         all()
@@ -175,12 +175,11 @@ def delete_product(
     response_model=ProductsOut
 )
 def text_search_products(
-    search: str,
-    limit: int = 10,
+    body: TextSearchRequest,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    refined_query = refine_query(search)
+    refined_query = refine_query(body.search)
 
     print(f"REFINED QUERY: {refined_query}")
 
@@ -199,7 +198,7 @@ def text_search_products(
         ORDER BY distance
         LIMIT :limit
     """)
-    result = db.execute(sql, {"embedding": embedding_str, "limit": limit}).mappings().all()
+    result = db.execute(sql, {"embedding": embedding_str, "limit": body.limit}).mappings().all()
 
     result_data = []
 
@@ -241,9 +240,13 @@ async def voice_search_products(
 ):
     transcript = await transcribe_audio(file)
 
-    result = text_search_products(
+    body = TextSearchRequest(
         search=transcript,
-        limit=limit,
+        limit=limit
+    )
+
+    result = text_search_products(
+        body=body,
         db=db,
         current_user=current_user
     )

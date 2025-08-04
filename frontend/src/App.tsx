@@ -25,7 +25,7 @@ function App() {
         <Route path="/users" element={<UserPage />} />
         <Route path="/text_search" element={<TextSearch />} />
         <Route path="/voice_search" element={<VoiceSearch />} />
-        <Route path="/:productId/ai_analysis" element={<ProductAIAnalysisWrapper />} />
+        <Route path="/products/:productId/ai_analysis" element={<ProductAIAnalysisWrapper />} />
       </Routes>
     </BrowserRouter>
   );

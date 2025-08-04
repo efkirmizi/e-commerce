@@ -1,9 +1,5 @@
 import { useEffect, useState } from "react";
-
-import {
-  fetchCategories,
-  deleteCategory,
-} from "../api/categoryApi";
+import { fetchCategories, deleteCategory } from "../api/categoryApi";
 
 interface CategoryBase {
   id: number;
@@ -15,19 +11,27 @@ export default function CategoriesList() {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const loadCategories = async () => {
+    setLoading(true);
     try {
       const data = await fetchCategories(search, page, 10);
       setCategories(data.data);
       setError(null);
-    } catch (err) {
+    } catch {
       setError("Failed to load categories");
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadCategories();
+    const delayDebounce = setTimeout(() => {
+      loadCategories();
+    }, 300);
+
+    return () => clearTimeout(delayDebounce);
   }, [search, page]);
 
   const handleDelete = async (id: number) => {
@@ -52,6 +56,7 @@ export default function CategoriesList() {
         className="border p-2 rounded mb-4"
       />
 
+      {loading && <p>Loading...</p>}
       {error && <p className="text-red-600">{error}</p>}
 
       <ul>
@@ -69,10 +74,12 @@ export default function CategoriesList() {
       </ul>
 
       <div className="mt-4 space-x-2">
-        <button disabled={page === 1} onClick={() => setPage(page - 1)}>
+        <button disabled={page === 1 || loading} onClick={() => setPage(page - 1)}>
           Prev
         </button>
-        <button onClick={() => setPage(page + 1)}>Next</button>
+        <button disabled={loading} onClick={() => setPage(page + 1)}>
+          Next
+        </button>
       </div>
     </div>
   );

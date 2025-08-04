@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { fetchUsers, deleteUser } from '../api/userApi';
 
 interface CartItemBase {
@@ -25,53 +25,46 @@ interface UserBase {
   carts: CartBase[];
 }
 
-interface UserCreate {
-  fullname: string;
-  username: string;
-  email: string;
-  password: string;
-}
-
-interface UserUpdate extends UserCreate {}
-
 interface UserOut extends UserBase {}
-
-interface UsersOut {
-  data: UserBase[];
-}
-
-interface UserOutDelete extends UserBase {}
 
 export default function UserListAdmin() {
   const [users, setUsers] = useState<UserOut[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
+  const debounceTimeout = useRef<number | null>(null);
 
-  async function loadUsers() {
+  async function loadUsers(query: string) {
     setLoading(true);
     try {
-      const data = await fetchUsers(search, 'user');
+      const data = await fetchUsers(query, 'user');
       setUsers(data.data);
       setError(null);
-    } catch {
-      setError('Failed to load users');
+    } catch (err: any) {
+      setError(err.response?.data?.detail || 'Failed to load users');
     } finally {
       setLoading(false);
     }
   }
 
   useEffect(() => {
-    loadUsers();
+    if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
+    debounceTimeout.current = setTimeout(() => {
+      loadUsers(search);
+    }, 500); // wait 500ms after user stops typing
+    // Cleanup on unmount or new effect call
+    return () => {
+      if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
+    };
   }, [search]);
 
   async function handleDelete(userId: number) {
     if (!window.confirm('Are you sure you want to delete this user?')) return;
     try {
       await deleteUser(userId);
-      await loadUsers();
-    } catch {
-      setError('Failed to delete user');
+      await loadUsers(search);
+    } catch (err: any) {
+      setError(err.response?.data?.detail || 'Failed to delete user');
     }
   }
 
@@ -85,7 +78,7 @@ export default function UserListAdmin() {
         onChange={(e) => setSearch(e.target.value)}
         className="border p-2 mb-4 rounded w-full"
       />
-      {error && <p className="text-red-600">{error}</p>}
+      {error && <p className="text-red-600 mb-4">{error}</p>}
       {loading ? (
         <p>Loading users...</p>
       ) : (

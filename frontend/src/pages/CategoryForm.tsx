@@ -40,7 +40,7 @@ export default function CategoryForm({ isEdit = false }: Props) {
       }
       navigate("/categories");
     } catch (err: any) {
-      setError(err.response?.data?.detail || "Failed to save category");
+      setError(err?.response?.data?.detail || err.message || "Failed to save category");
     }
   };
 
@@ -61,7 +61,12 @@ export default function CategoryForm({ isEdit = false }: Props) {
 
       <button
         type="submit"
-        className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700"
+        disabled={!name.trim()}
+        className={`py-2 px-4 rounded ${
+          !name.trim()
+            ? "bg-gray-400 cursor-not-allowed"
+            : "bg-blue-600 hover:bg-blue-700 text-white"
+        }`}
       >
         Save
       </button>

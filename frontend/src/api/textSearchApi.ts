@@ -1,5 +1,4 @@
-// src/api/textSearchApi.ts
-import axios from 'axios';
+import api from '../axios';
 
 // src/types/product.ts
 interface CategoryBase {
@@ -28,6 +27,6 @@ interface ProductsOut {
 }
 
 export const textSearchProducts = async (search: string, limit = 10): Promise<ProductsOut> => {
-  const response = await axios.post<ProductsOut>("/text_search", { search, limit });
+  const response = await api.post<ProductsOut>("/products/text_search", { search, limit });
   return response.data;
 };

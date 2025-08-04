@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
-import { fetchProducts, textSearchProducts } from '../api/productApi';
+// src/pages/ProductListPage.tsx
+import { useState, useEffect } from "react";
+import api from "../axios";
 
-// src/types/product.ts
 interface CategoryBase {
   id: number;
   name: string;
@@ -12,99 +12,161 @@ interface ProductBase {
   title: string;
   description?: string;
   price: number;
-  discount_percentage: number; // 0-100 validation done backend-side
-  rating: number;
-  stock: number;
-  brand: string;
-  thumbnail: string;
-  images: string[];
-  is_published: boolean;
-  created_at: string;  // ISO datetime string
-  category: CategoryBase;
-}
-
-interface ProductCreate {
-  title: string;
-  description?: string | null;
-  price: number;
   discount_percentage: number;
   rating: number;
   stock: number;
   brand: string;
   thumbnail: string;
   images: string[];
-  is_published?: boolean;  // default true
-  category_id: number;
+  is_published: boolean;
+  created_at: string;
+  category: CategoryBase;
 }
-
-interface ProductUpdate extends ProductCreate {}
-
-interface ProductOut extends ProductBase {}
 
 interface ProductsOut {
   data: ProductBase[];
+  // Add pagination metadata here if backend supports it
+  total_items?: number;
+  total_pages?: number;
+  current_page?: number;
+  page_size?: number;
 }
 
-interface ProductsAIAnalysisOut {
-  product: ProductBase;
-  sentiment_score_avg: number;
-  sentiment_label_counts: Record<string, number>;
-  comments_summary: string;
-}
-
-export default function ProductList() {
-  const [products, setProducts] = useState<ProductOut[]>([]);
+export default function ProductListPage() {
+  const [products, setProducts] = useState<ProductBase[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState(search);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState<number | null>(null);
 
-  async function loadProducts() {
-    setLoading(true);
-    try {
-      const data = search
-        ? await textSearchProducts(search)
-        : await fetchProducts();
-      setProducts(data.data);
-      setError(null);
-    } catch {
-      setError('Failed to load products');
-    } finally {
-      setLoading(false);
-    }
-  }
-
+  // Debounce search input
   useEffect(() => {
-    loadProducts();
+    const handler = setTimeout(() => {
+      setDebouncedSearch(search.trim());
+      setPage(1); // Reset to first page on new search
+    }, 500);
+    return () => clearTimeout(handler);
   }, [search]);
 
+  useEffect(() => {
+    async function loadProducts() {
+      setLoading(true);
+      setError(null);
+      try {
+        const params = {
+          search: debouncedSearch,
+          page,
+          limit: 10,
+        };
+        const response = await api.get<ProductsOut>("/products/", { params });
+        setProducts(response.data.data);
+
+        // If backend returns total_pages, update it
+        if (response.data.total_pages !== undefined) {
+          setTotalPages(response.data.total_pages);
+        } else {
+          setTotalPages(null);
+        }
+      } catch (err: any) {
+        setError(
+          err.response?.data?.detail ||
+            "Failed to load products. Please try again."
+        );
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadProducts();
+  }, [debouncedSearch, page]);
+
+  const handlePrevPage = () => {
+    if (page > 1) setPage(page - 1);
+  };
+
+  const handleNextPage = () => {
+    if (totalPages === null || page < totalPages) {
+      setPage(page + 1);
+    }
+  };
+
   return (
-    <div>
+    <div className="max-w-5xl mx-auto p-6">
+      <h1 className="text-3xl font-bold mb-6">Product List</h1>
+
       <input
         type="text"
-        placeholder="Search products..."
+        placeholder="Search products by title..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        className="border p-2 rounded mb-4"
+        className="border rounded p-2 w-full mb-6"
       />
 
-      {error && <p className="text-red-600">{error}</p>}
+      {error && <p className="text-red-600 mb-4">{error}</p>}
 
       {loading ? (
         <p>Loading products...</p>
+      ) : products.length === 0 ? (
+        <p>No products found.</p>
       ) : (
-        <ul>
+        <ul className="space-y-4">
           {products.map((product) => (
-            <li key={product.id} className="mb-3 border p-3 rounded">
-              <h3 className="font-bold">{product.title}</h3>
-              <p>{product.description}</p>
-              <p>
-                Price: ${product.price} | Rating: {product.rating} | Stock: {product.stock}
-              </p>
-              <p>Category: {product.category.name}</p>
+            <li
+              key={product.id}
+              className="border rounded p-4 flex gap-4 items-center"
+            >
+              <img
+                src={product.thumbnail}
+                alt={product.title}
+                className="w-24 h-24 object-cover rounded"
+              />
+              <div className="flex-grow">
+                <h2 className="text-xl font-semibold">{product.title}</h2>
+                <p className="text-gray-600 line-clamp-2">
+                  {product.description || "No description"}
+                </p>
+                <p className="mt-1 text-sm text-gray-500">
+                  Category: {product.category.name}
+                </p>
+                <p className="mt-1 font-bold">${product.price.toFixed(2)}</p>
+              </div>
             </li>
           ))}
         </ul>
       )}
+
+      {/* Pagination controls */}
+      <div className="flex justify-center mt-8 space-x-4">
+        <button
+          onClick={handlePrevPage}
+          disabled={page === 1}
+          className={`px-4 py-2 rounded ${
+            page === 1
+              ? "bg-gray-300 cursor-not-allowed"
+              : "bg-blue-600 text-white hover:bg-blue-700"
+          }`}
+        >
+          Prev
+        </button>
+
+        <span className="flex items-center">
+          Page {page}
+          {totalPages !== null && totalPages > 0 && ` of ${totalPages}`}
+        </span>
+
+        <button
+          onClick={handleNextPage}
+          disabled={totalPages !== null ? page >= totalPages : false}
+          className={`px-4 py-2 rounded ${
+            totalPages !== null && page >= totalPages
+              ? "bg-gray-300 cursor-not-allowed"
+              : "bg-blue-600 text-white hover:bg-blue-700"
+          }`}
+        >
+          Next
+        </button>
+      </div>
     </div>
   );
 }

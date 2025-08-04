@@ -1,15 +1,15 @@
 // src/api/accountApi.ts
-import axios from "axios";
+import api from "../axios";
 
 // src/types/account.ts
-interface CartItemBase {
+export interface CartItemBase {
   id: number;
   product_id: number;
   quantity: number;
   subtotal: number;
 }
 
-interface CartBase {
+export interface CartBase {
   id: number;
   user_id: number;
   created_at: string; // datetime ISO string
@@ -17,7 +17,7 @@ interface CartBase {
   cart_items: CartItemBase[];
 }
 
-interface AccountBase {
+export interface AccountBase {
   id: number;
   username: string;
   email: string;        // EmailStr maps to string
@@ -28,24 +28,24 @@ interface AccountBase {
   carts: CartBase[];
 }
 
-interface AccountUpdate {
+export interface AccountUpdate {
   username: string;
   fullname: string;
   password: string;
 }
 
-interface AccountOut extends AccountBase {}
+export interface AccountOut extends AccountBase {}
 
 export const getMyInfo = async (): Promise<AccountOut> => {
-  const res = await axios.get<AccountOut>('/me');
+  const res = await api.get<AccountOut>('/me');
   return res.data;
 };
 
 export const updateMyInfo = async (payload: AccountUpdate): Promise<AccountOut> => {
-  const res = await axios.put<AccountOut>('/me', payload);
+  const res = await api.put<AccountOut>('/me', payload);
   return res.data;
 };
 
 export const deleteMyAccount = async (): Promise<void> => {
-  await axios.delete('/me');
+  await api.delete('/me');
 };

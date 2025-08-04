@@ -1,6 +1,5 @@
-// src/pages/ProductAIAnalysis.tsx
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../axios";
 
 interface CategoryBase {
   id: number;
@@ -44,7 +43,7 @@ const ProductAIAnalysis: React.FC<ProductAIAnalysisProps> = ({ productId }) => {
       setLoading(true);
       setError(null);
       try {
-        const response = await axios.get<ProductsAIAnalysisOut>(`/products/${productId}/ai_analysis`);
+        const response = await api.get<ProductsAIAnalysisOut>(`/products/${productId}/ai_analysis`);
         setData(response.data);
       } catch (err: any) {
         if (err.response) {

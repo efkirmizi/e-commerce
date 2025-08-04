@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface CommentBase {
   id: number;
@@ -8,10 +8,6 @@ interface CommentBase {
   created_at: string;       // datetime as ISO string
   sentiment_score: number;
   sentiment_label: string;
-}
-
-interface CommentOut extends CommentBase {
-  id: number; // you need id for keys, editing, deleting
 }
 
 import {
@@ -26,106 +22,98 @@ interface ProductCommentsProps {
 }
 
 export default function ProductComments({ productId }: ProductCommentsProps) {
-  const [comments, setComments] = useState<CommentOut[]>([]);
+  const [comments, setComments] = useState<CommentBase[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // NOTE: rating is a string here because inputs return string
-  const [newComment, setNewComment] = useState<{content: string; rating: string}>({
+  // New comment state: rating as string because input returns string
+  const [newComment, setNewComment] = useState<{ content: string; rating: string }>({
     content: '',
     rating: '0',
   });
 
-  // Editing comment state: rating is string here too
+  // Editing comment state
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
-  const [editingComment, setEditingComment] = useState<{content: string; rating: string}>({
+  const [editingComment, setEditingComment] = useState<{ content: string; rating: string }>({
     content: '',
     rating: '0',
   });
 
-  // Load comments
   async function loadComments() {
     setLoading(true);
     try {
       const res = await fetchCommentsByProduct(productId);
       setComments(res.data);
       setError(null);
-    } catch (err) {
+    } catch (err: any) {
       setError('Failed to load comments');
     } finally {
       setLoading(false);
     }
   }
 
-  React.useEffect(() => {
+  useEffect(() => {
     loadComments();
   }, [productId]);
 
-  // Handle input change for new comment form
   function handleNewCommentChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) {
     setNewComment({ ...newComment, [e.target.name]: e.target.value });
   }
 
-  // Handle new comment submit
   async function handleNewCommentSubmit(e: React.FormEvent) {
     e.preventDefault();
     try {
       await createComment(productId, {
         content: newComment.content,
-        rating: Number(newComment.rating), // convert to number here
+        rating: Number(newComment.rating),
       });
       setNewComment({ content: '', rating: '0' });
       await loadComments();
-    } catch {
+    } catch (err: any) {
       setError('Failed to add comment');
     }
   }
 
-  // Start editing a comment
-  function startEdit(comment: CommentOut) {
+  function startEdit(comment: CommentBase) {
     setEditingCommentId(comment.id);
-    setEditingComment({ content: comment.content, rating: comment.rating.toString() }); // convert to string here
+    setEditingComment({ content: comment.content, rating: comment.rating.toString() });
   }
 
-  // Handle editing comment input change
   function handleEditChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) {
     setEditingComment({ ...editingComment, [e.target.name]: e.target.value });
   }
 
-  // Submit edited comment
   async function handleEditSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (editingCommentId === null) return;
     try {
       await updateComment(productId, editingCommentId, {
         content: editingComment.content,
-        rating: Number(editingComment.rating), // convert to number here
+        rating: Number(editingComment.rating),
       });
       setEditingCommentId(null);
       setEditingComment({ content: '', rating: '0' });
       await loadComments();
-    } catch {
+    } catch (err: any) {
       setError('Failed to update comment');
     }
   }
 
-  // Cancel editing
   function cancelEdit() {
     setEditingCommentId(null);
     setEditingComment({ content: '', rating: '0' });
   }
 
-  // Delete comment
   async function handleDelete(commentId: number) {
     if (!window.confirm('Are you sure you want to delete this comment?')) return;
     try {
       await deleteComment(productId, commentId);
       await loadComments();
-    } catch {
+    } catch (err: any) {
       setError('Failed to delete comment');
     }
   }
@@ -135,6 +123,7 @@ export default function ProductComments({ productId }: ProductCommentsProps) {
       <h3 className="text-xl font-bold mb-4">Comments</h3>
 
       {error && <div className="text-red-600 mb-4">{error}</div>}
+
       {loading ? (
         <p>Loading comments...</p>
       ) : (
@@ -160,10 +149,7 @@ export default function ProductComments({ productId }: ProductCommentsProps) {
                 className="w-20 p-2 border rounded mb-2"
               />
               <div>
-                <button
-                  type="submit"
-                  className="mr-2 bg-green-500 text-white px-4 py-2 rounded"
-                >
+                <button type="submit" className="mr-2 bg-green-500 text-white px-4 py-2 rounded">
                   Save
                 </button>
                 <button
@@ -176,17 +162,13 @@ export default function ProductComments({ productId }: ProductCommentsProps) {
               </div>
             </form>
           ) : (
-            <div
-              key={comment.id}
-              className="mb-4 p-2 border rounded bg-gray-50"
-            >
+            <div key={comment.id} className="mb-4 p-2 border rounded bg-gray-50">
               <p>{comment.content}</p>
               <p>
                 Rating: <strong>{comment.rating.toFixed(1)}</strong>
               </p>
               <p>
-                Sentiment: <em>{comment.sentiment_label}</em> (
-                {comment.sentiment_score.toFixed(2)})
+                Sentiment: <em>{comment.sentiment_label}</em> ({comment.sentiment_score.toFixed(2)})
               </p>
               <p className="text-xs text-gray-500">
                 Posted at: {new Date(comment.created_at).toLocaleString()}
