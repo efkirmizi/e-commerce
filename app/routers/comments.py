@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Query, Depends, status, HTTPException
-from ..models import User, Product, Comment
-from ..database import get_db
-from ..oauth2 import get_current_user
-from ..huggingface import analyze_comment_sentiment
-from ..schemas.comments import CommentCreate, CommentOut, CommentsOut, CommentUpdate
+from app.models import User, Product, Comment
+from app.database import get_db
+from app.oauth2 import get_current_user
+from app.huggingface import analyze_comment_sentiment
+from app.schemas.comments import CommentCreate, CommentOut, CommentsOut, CommentUpdate
 from sqlalchemy import asc
 from sqlalchemy.orm import Session
 from datetime import datetime, timezone

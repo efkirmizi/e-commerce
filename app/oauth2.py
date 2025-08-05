@@ -2,10 +2,10 @@ from jose import JWTError, jwt
 import os
 from dotenv import load_dotenv
 from datetime import datetime, timedelta, timezone
-from . import models
-from .database import get_db
-from .models import User
-from .schemas.auth import TokenData
+from app import models
+from app.database import get_db
+from app.models import User
+from app.schemas.auth import TokenData
 from fastapi import Depends, status, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session

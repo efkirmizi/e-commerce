@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from typing import List
 from datetime import datetime
-from .products import ProductBase, CategoryBase
+from app.schemas.products import ProductBase, CategoryBase
 
 
 class BaseConfig:

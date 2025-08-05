@@ -1,8 +1,8 @@
 from fastapi import APIRouter, status, Depends, Query, HTTPException
-from ..schemas.categories import CategoriesOut, CategoryOut, CategoryCreate, CategoryUpdate
-from ..database import get_db
-from ..oauth2 import get_current_user, get_admin_user
-from ..models import User, Category
+from app.schemas.categories import CategoriesOut, CategoryOut, CategoryCreate, CategoryUpdate
+from app.database import get_db
+from app.oauth2 import get_current_user, get_admin_user
+from app.models import User, Category
 from sqlalchemy import asc
 from sqlalchemy.orm import Session
 
@@ -27,7 +27,7 @@ def get_all_categories(
 ):
     categories = db.query(Category).\
         order_by(asc(Category.id)).\
-        filter(Category.name.ilike(f"%{search}")).\
+        filter(Category.name.ilike(f"%{search}%")).\
         limit(limit).\
         offset((page - 1) * limit).\
         all()
@@ -76,7 +76,7 @@ def create_category(
     if existing_category:
         raise HTTPException(
             status_code=status.HTTP_406_NOT_ACCEPTABLE,
-            detail=f"Category with name: {new_category["name"]} already exists!"
+            detail=f"Category with name: {new_category_dict['name']} already exists!"
         )
     category = Category(**new_category_dict)
     

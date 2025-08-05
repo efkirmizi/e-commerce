@@ -1,7 +1,7 @@
 from fastapi import FastAPI
-from .routers import accounts, auth, carts, categories, products, users, comments
+from app.routers import accounts, auth, carts, categories, products, users, comments
 from fastapi.middleware.cors import CORSMiddleware
-from .database import Base, engine
+from app.database import Base, engine
 
 Base.metadata.create_all(engine)
 

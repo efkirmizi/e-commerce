@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Query, status, Depends, HTTPException
-from ..schemas.users import UsersOut, UserOut, UserCreate, UserUpdate
-from ..database import get_db
-from ..oauth2 import get_current_user, get_admin_user
-from ..models import User
-from ..utils import hash
+from app.schemas.users import UsersOut, UserOut, UserCreate, UserUpdate
+from app.database import get_db
+from app.oauth2 import get_current_user, get_admin_user
+from app.models import User
+from app.utils import hash
 from sqlalchemy import asc
 from sqlalchemy.orm import Session
 
@@ -30,7 +30,7 @@ def get_all_users(
     users = db.query(User).\
         order_by(asc(User.id)).\
         filter(
-            User.username.ilike(f"%{search}"),
+            User.username.ilike(f"%{search}%"),
             User.role == role
         ).\
         limit(limit).\

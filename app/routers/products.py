@@ -1,13 +1,13 @@
 from fastapi import APIRouter, status, Query, Depends, HTTPException, UploadFile, File
-from ..schemas.products import ProductsOut, ProductOut, ProductCreate, ProductUpdate, ProductsAIAnalysisOut, TextSearchRequest
-from ..database import get_db
-from ..oauth2 import get_current_user, get_admin_user
-from ..models import User, Product, Category, Comment
+from app.schemas.products import ProductsOut, ProductOut, ProductCreate, ProductUpdate, ProductsAIAnalysisOut, TextSearchRequest
+from app.database import get_db
+from app.oauth2 import get_current_user, get_admin_user
+from app.models import User, Product, Category, Comment
 from sqlalchemy import asc, text
 from sqlalchemy.orm import Session
-from ..gemini import generate_product_description, refine_query, generate_comment_summary
-from ..huggingface import embed_product, embed_text
-from ..speech_to_text import transcribe_audio
+from app.gemini import generate_product_description, refine_query, generate_comment_summary
+from app.huggingface import embed_product, embed_text
+from app.speech_to_text import transcribe_audio
 from collections import Counter
 
 

@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, status, HTTPException
-from ..database import get_db
-from ..oauth2 import get_current_user
-from ..schemas.accounts import AccountUpdate, AccountOut
-from ..models import User
-from ..utils import hash
+from app.database import get_db
+from app.oauth2 import get_current_user
+from app.schemas.accounts import AccountUpdate, AccountOut
+from app.models import User
+from app.utils import hash
 from sqlalchemy.orm import Session
 
 

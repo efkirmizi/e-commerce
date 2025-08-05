@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from .schemas.products import ProductBase
+from app.schemas.products import ProductBase
 import google.generativeai as genai
 from typing import List
 

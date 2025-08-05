@@ -1,8 +1,8 @@
 from fastapi import APIRouter, status, Query, Depends, HTTPException
-from ..schemas.carts import CartsOutList, CartOut, CartCreate, CartUpdate
-from ..database import get_db
-from ..oauth2 import get_current_user
-from ..models import User, Cart, Product, CartItem
+from app.schemas.carts import CartsOutList, CartOut, CartCreate, CartUpdate
+from app.database import get_db
+from app.oauth2 import get_current_user
+from app.models import User, Cart, Product, CartItem
 from sqlalchemy import asc
 from sqlalchemy.orm import Session
 
