@@ -12,11 +12,11 @@ A modern, AI-enhanced e-commerce platform backend and frontend designed to provi
 
 # Top 3 Endpoints
 ## /text_search
-- Understands and refines user queries using Gemini 2.5 Pro for searching products and does semantic search using word embeddings.
+- Understands and refines user queries using Gemini 2.5 Pro for searching products and does semantic search using word embeddings, returns 10 most relevant results.
 ## /voice_search
 - Uses Google's Speech-To-Text model to write the audio transcript then sends it to /text_search
 ## /products/{product_id}/ai_analysis
-- Analyzes specific product's comments using sentiment analysis, summarizes good and bad aspects of the product according to commments.
+- Analyzes specific product's comments using sentiment analysis, gives a comments score, summarizes good and bad aspects of the product according to commments.
 - Recommend https://kumulala.xyz/products/2/ai_analysis since it has dummy comments.
 
 ---
@@ -250,6 +250,4 @@ Voice Search (Google STT) AI Analysis & Query Refinement (Hugging Face, Gemini)
 - This project is licensed under the MIT License. See the LICENSE file for details.
 
 # Contact
-- Created and maintained by Enis Furkan Kırmızı
-- Email: enisfurkankirmizi@gmail.com
-- GitHub: github.com/efkirmizi
+- Created and maintained by Enis Furkan Kırmızı, Hazar Utku Sözer, Faruk Rıza Öz
