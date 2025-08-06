@@ -207,6 +207,9 @@ Voice Search (Google STT) AI Analysis & Query Refinement (Hugging Face, Gemini)
 # Query Refinement
 - Uses Google Gemini API to reformulate and clarify user search queries for better search relevance.
 
+# AI Generated Product Descriptions
+- Uses Google Gemini API to generate SEO compliant descriptions when creating products if description section is empty, it is optional.
+
 # Security & Authentication
 - OAuth2 password flow combined with JWT tokens secures API endpoints.
 
