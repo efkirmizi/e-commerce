@@ -4,13 +4,7 @@ A modern, AI-enhanced e-commerce platform backend and frontend designed to provi
 
 ---
 
-# Testing
-- Deployed to AWS, live at https://kumulala.xyz
-- Login at https://kumulala.xyz/login with admin account given below so you can access all endpoints
-- e-mail: 1@example.com
-- password: 1 
-
-# Top 3 Endpoints
+# Top Features
 ## /text_search
 - Understands and refines user queries using Gemini 2.5 Pro for searching products and does semantic search using word embeddings, returns 10 most relevant results.
 ## /voice_search
